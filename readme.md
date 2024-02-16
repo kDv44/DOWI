@@ -1,5 +1,5 @@
 
-![image](https://github.com/kDv44/DOWI/assets/94145647/110c3f4c-5231-4ed0-b9e5-cea5030df948)
+![image](https://github.com/kDv44/DOWI/assets/94145647/dc0df8a5-efcf-4c69-a9f6-835b97a7cebe)
 
 
 To use, simply install the dependencies from req.txt and run the main file. \
