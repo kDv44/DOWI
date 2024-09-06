@@ -1,59 +1,12 @@
 import os
-
 from rgbprint import Color, gradient_print
-from pytube import YouTube, Playlist
+from simple_term_menu import TerminalMenu
+
+from yt_downloader import download_song as yt_song, download_playlist as yt_playlist
+from sc_downloader import download_track as sc_track, download_playlist as sc_playlist
 
 
-def downloader_song(song_link: str):
-    try:
-        yt = YouTube(song_link)
-
-        video = yt.streams.filter(only_audio=True).first()
-        out_file = video.download()
-        base, ext = os.path.splitext(out_file)
-        new_file = base + ".mp3"
-
-        if os.path.exists(new_file):
-            print(f"File '{new_file}' already exists.")
-            os.remove(out_file)
-        else:
-            os.rename(out_file, new_file)
-            print(f"Downloaded: '{video.title}'")
-
-    except Exception as excep:
-        print("\nSomething Went Wrong Please Try Again.\n")
-        print(excep)
-
-
-def download_playlist(playlist_link: str):
-    playlist = Playlist(playlist_link)
-
-    try:
-        if playlist.title.__str__() not in os.listdir():
-            os.mkdir(playlist.title)
-
-            for video in playlist.videos:
-                video = video.streams.filter(only_audio=True).first()
-                out_file = video.download(f"{playlist.title}")
-                base, ext = os.path.splitext(out_file)
-                new_file = base + ".mp3"
-
-                if os.path.exists(new_file):
-                    print(f"File '{base}' already exists.")
-                    os.remove(out_file)
-                else:
-                    os.rename(out_file, new_file)
-                    print(f"Downloaded: {video.title}")
-
-        else:
-            print(f"Directory '{playlist.title}' already exists.")
-
-    except Exception as excep:
-        print("\nSomething Went Wrong Please Try Again.\n")
-        print(excep)
-
-
-def main():
+def main_menu():
     gradient_print(
         """
      ========================================================================   
@@ -72,35 +25,70 @@ def main():
 
     while True:
         gradient_print(
-            "Choose option:\n1. Download Playlist\n2. Download Single Song\n3. Exit",
+            "Choose an option:",
             start_color=Color.pale_violet_red,
             end_color=Color.pale_violet_red,
         )
-        choice = input()
 
-        if choice == "1":
-            gradient_print(
-                "Enter Playlist URL: ",
-                start_color=Color.pale_violet_red,
-                end_color=Color.pale_violet_red,
-            )
-            playlist_url = input()
-            download_playlist(playlist_url)
+        options = [
+            "Download YouTube Playlist",
+            "Download YouTube Track",
+            "Download SoundCloud Track",
+            "Download SoundCloud Playlist",
+            "Exit",
+        ]
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
 
-        elif choice == "2":
-            gradient_print(
-                "Enter song URL: ",
-                start_color=Color.pale_violet_red,
-                end_color=Color.pale_violet_red,
-            )
-            song_url = input()
-            downloader_song(song_url)
+        if menu_entry_index == 0:
+            download_menu(yt_playlist, "YouTube Playlist")
 
-        elif choice == "3":
+        elif menu_entry_index == 1:
+            download_menu(yt_song, "YouTube Song")
+
+        elif menu_entry_index == 2:
+            download_menu(lambda url: sc_track(url, os.getcwd()), "SoundCloud Track")
+
+        elif menu_entry_index == 3:
+            download_menu(sc_playlist, "SoundCloud Playlist")
+
+        elif menu_entry_index == 4:
             break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+
+def download_menu(download_function, type_name):
+    while True:
+        gradient_print(
+            f"Enter {type_name} URL or choose an option:",
+            start_color=Color.pale_violet_red,
+            end_color=Color.pale_violet_red,
+        )
+
+        options = ["Enter URL", "Back"]
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
+
+        if menu_entry_index == 0:
+            gradient_print(
+                f"Enter {type_name} URL: ",
+                start_color=Color.pale_violet_red,
+                end_color=Color.pale_violet_red,
+            )
+            url = input()
+            try:
+                download_function(url)
+            except Exception as e:
+                print(f"Failed to download {type_name.lower()}: {e}")
+
+        elif menu_entry_index == 1:
+            break
+
         else:
             print("Invalid choice. Please try again.")
 
 
 if __name__ == "__main__":
-    main()
+    main_menu()
